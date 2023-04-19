@@ -5,6 +5,7 @@ import pandas as pd
 class Criterion:
     NAME_TEXT = "Название"
     VALUE_TEXT = "Значимость"
+    FILE_NAME = "criteria.csv"
 
     def __init__(self, name: str = "", value: float = 0.0):
         self.value = value
@@ -23,6 +24,10 @@ class Criterion:
         }
         return pd.DataFrame(data)
 
+    @staticmethod
+    def from_dataframe(dataframe: pd.DataFrame) -> list["Criterion"]:
+        return [Criterion(row[Criterion.NAME_TEXT], row[Criterion.VALUE_TEXT]) for _, row in dataframe.iterrows()]
+
 
 @st.cache_resource
 def create_initial_criteria() -> list[Criterion]:
@@ -33,8 +38,19 @@ def create_initial_criteria() -> list[Criterion]:
     ]
 
 
+@st.cache_data
+def convert_to_csv(dataframe: pd.DataFrame) -> bytes:
+    return dataframe.to_csv().encode("utf-8")
+
+
 def create_criteria_view(criteria: list[Criterion]):
     st.header("Критерии")
+    csv_file = st.file_uploader("Загрузить критерии", type="csv")
+    if csv_file is not None:
+        dataframe = pd.read_csv(csv_file, index_col=0)
+        uploaded_criteria = Criterion.from_dataframe(dataframe)
+        criteria.clear()
+        criteria.extend(uploaded_criteria)
     column_width_weights = [1, 8, 8, 1]
     with st.container():
         columns = st.columns(column_width_weights)
@@ -59,7 +75,11 @@ def create_criteria_view(criteria: list[Criterion]):
                           on_click=lambda: criteria.pop(index))
     st.button(":heavy_plus_sign:", key="criterion_add", help="Добавить критерий",
               on_click=lambda: criteria.append(Criterion()))
-    st.dataframe(Criterion.to_dataframe(criteria))
+    serialized_criteria = convert_to_csv(Criterion.to_dataframe(criteria))
+    st.download_button("Скачать критерии", serialized_criteria,
+                       file_name=Criterion.FILE_NAME,
+                       mime="text/csv")
+    st.dataframe(Criterion.to_dataframe(criteria))  # TODO: for debug purposes only, remove later
 
 
 def main():
