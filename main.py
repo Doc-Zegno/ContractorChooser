@@ -2,6 +2,29 @@ import streamlit as st
 import pandas as pd
 
 
+class State:
+    _IS_CRITERIA_FILE_CHANGED_TEXT = "is_criteria_file_changed"
+
+    @staticmethod
+    def set_criteria_file_changed():
+        st.session_state[State._IS_CRITERIA_FILE_CHANGED_TEXT] = True
+
+    @staticmethod
+    def reset_criteria_file_changed() -> bool:
+        """
+        Atomically check whether the uploaded criteria file has recently changed
+        and reset this status flag back to False, so the subsequent
+        checks will fail until the next change of file.
+
+        :return: True if uploaded criteria file has changed since the previous reset.
+        """
+        if State._IS_CRITERIA_FILE_CHANGED_TEXT not in st.session_state:
+            return False
+        is_criteria_file_changed = st.session_state[State._IS_CRITERIA_FILE_CHANGED_TEXT]
+        st.session_state[State._IS_CRITERIA_FILE_CHANGED_TEXT] = False
+        return is_criteria_file_changed
+
+
 class Criterion:
     NAME_TEXT = "Название"
     VALUE_TEXT = "Значимость"
@@ -45,8 +68,8 @@ def convert_to_csv(dataframe: pd.DataFrame) -> bytes:
 
 def create_criteria_view(criteria: list[Criterion]):
     st.header("Критерии")
-    csv_file = st.file_uploader("Загрузить критерии", type="csv")
-    if csv_file is not None:
+    csv_file = st.file_uploader("Загрузить критерии", type="csv", on_change=State.set_criteria_file_changed)
+    if State.reset_criteria_file_changed() and csv_file is not None:
         dataframe = pd.read_csv(csv_file, index_col=0)
         uploaded_criteria = Criterion.from_dataframe(dataframe)
         criteria.clear()
