@@ -94,8 +94,10 @@ def create_criteria_view(criteria: list[Criterion]):
                                                   value=criterion.value, min_value=0.0, max_value=1.0,
                                                   label_visibility="collapsed")
             with columns[3]:
+                def remove_criterion(i: int = index):
+                    criteria.pop(i)
                 st.button(":x:", key=f"criterion_remove_{index}", help="Удалить критерий",
-                          on_click=lambda: criteria.pop(index))
+                          on_click=remove_criterion)
     st.button(":heavy_plus_sign:", key="criterion_add", help="Добавить критерий",
               on_click=lambda: criteria.append(Criterion()))
     serialized_criteria = convert_to_csv(Criterion.to_dataframe(criteria))
