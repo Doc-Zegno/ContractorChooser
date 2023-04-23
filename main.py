@@ -1,3 +1,4 @@
+from typing import Optional, Union
 import streamlit as st
 import pandas as pd
 
@@ -52,12 +53,41 @@ class Criterion:
         return [Criterion(row[Criterion.NAME_TEXT], row[Criterion.VALUE_TEXT]) for _, row in dataframe.iterrows()]
 
 
+class Contractor:
+    NAME_TEXT = "Название"
+
+    def __init__(self, name: str = "", scores: Optional[dict[str, int]] = None):
+        self.scores = scores if scores is not None else {}
+        self.name = name
+
+    @staticmethod
+    def to_dataframe(criteria: list[Criterion], contractors: list["Contractor"]) -> pd.DataFrame:
+        data: dict[str, Union[list[int], list[str]]] = {}
+        names = []
+        for criterion in criteria:
+            data[criterion.name] = []
+        for contractor in contractors:
+            names.append(contractor.name)
+            for criterion in criteria:
+                score = contractor.scores[criterion.name]  # TODO: gracefully handle missing values here
+                data[criterion.name].append(score)
+        data[Contractor.NAME_TEXT] = names  # TODO (minor): wrong order of columns
+        return pd.DataFrame(data)
+
+
 @st.cache_resource
 def create_initial_criteria() -> list[Criterion]:
     return [
         Criterion("Цена", 0.35),
         Criterion("Качество", 0.65),
         Criterion("Удаленность", 0.1),
+    ]
+
+
+@st.cache_resource
+def create_initial_contractors() -> list[Contractor]:
+    return [
+        Contractor("Рога и Копыта", {"Цена": 3, "Качество": 4, "Удаленность": 2})
     ]
 
 
@@ -107,9 +137,48 @@ def create_criteria_view(criteria: list[Criterion]):
     st.dataframe(Criterion.to_dataframe(criteria))  # TODO: for debug purposes only, remove later
 
 
+def create_contractors_view(criteria: list[Criterion], contractors: list[Contractor]):
+    st.header("Подрядчики")
+    if len(criteria) == 0:
+        st.error("Невозможно отобразить данные о подрядчиках, пока не заданы критерии")
+        return
+    large_column_weight = 24 // (len(criteria) + 1)
+    column_width_weights = [1, 8] + [large_column_weight] * len(criteria) + [1]
+    with st.container():
+        columns = st.columns(column_width_weights)
+        with columns[1]:
+            st.text(Contractor.NAME_TEXT)
+        for criterion_index, criterion in enumerate(criteria):
+            with columns[2 + criterion_index]:
+                st.text(criterion.name)
+    for contractor_index, contractor in enumerate(contractors):
+        with st.container():
+            columns = st.columns(column_width_weights)
+            with columns[0]:
+                st.text(f"{contractor_index + 1}.")
+            with columns[1]:
+                contractor.name = st.text_input(Contractor.NAME_TEXT, key=f"contractor_name_{contractor_index}",
+                                                value=contractor.name, label_visibility="collapsed")
+            for criterion_index, criterion in enumerate(criteria):
+                with columns[2 + criterion_index]:
+                    old_score = contractor.scores.get(criterion.name, 0)
+                    new_score = st.text_input(criterion.name, value=old_score, label_visibility="collapsed",
+                                              key=f"contractor_{contractor_index}_criterion_{criterion_index}")
+                    contractor.scores[criterion.name] = new_score
+            with columns[-1]:
+                # def remove_contractor(i: int = contractor_index):  # FIXME: is invoked automatically for some reason
+                #     contractors.pop(i)
+                st.button(":x:", key=f"contractor_remove_{contractor_index}", help="Удалить подрядчика")
+    st.button(":heavy_plus_sign:", key="contractor_add", help="Добавить подрядчика",
+              on_click=lambda: contractors.append(Contractor()))
+    st.dataframe(Contractor.to_dataframe(criteria, contractors))  # TODO: for debug purposes only, remove later
+
+
 def main():
     criteria = create_initial_criteria()
     create_criteria_view(criteria)
+    contractors = create_initial_contractors()
+    create_contractors_view(criteria, contractors)
 
 
 main()
