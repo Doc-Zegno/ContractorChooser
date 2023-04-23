@@ -8,7 +8,7 @@ class State:
 
     @staticmethod
     def set_criteria_file_changed():
-        st.session_state[State._IS_CRITERIA_FILE_CHANGED_TEXT] = True
+        State._set(State._IS_CRITERIA_FILE_CHANGED_TEXT)
 
     @staticmethod
     def reset_criteria_file_changed() -> bool:
@@ -19,11 +19,19 @@ class State:
 
         :return: True if uploaded criteria file has changed since the previous reset.
         """
-        if State._IS_CRITERIA_FILE_CHANGED_TEXT not in st.session_state:
+        return State._reset(State._IS_CRITERIA_FILE_CHANGED_TEXT)
+
+    @staticmethod
+    def _set(flag_name: str):
+        st.session_state[flag_name] = True
+
+    @staticmethod
+    def _reset(flag_name: str) -> bool:
+        if flag_name not in st.session_state:
             return False
-        is_criteria_file_changed = st.session_state[State._IS_CRITERIA_FILE_CHANGED_TEXT]
-        st.session_state[State._IS_CRITERIA_FILE_CHANGED_TEXT] = False
-        return is_criteria_file_changed
+        has_flag_been_set = st.session_state[flag_name]
+        st.session_state[flag_name] = False
+        return has_flag_been_set
 
 
 class Criterion:
