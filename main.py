@@ -5,6 +5,7 @@ import pandas as pd
 
 class State:
     _IS_CRITERIA_FILE_CHANGED_TEXT = "is_criteria_file_changed"
+    _IS_CONTRACTORS_FILE_CHANGED_TEXT = "is_contractors_file_changed"
 
     @staticmethod
     def set_criteria_file_changed():
@@ -20,6 +21,21 @@ class State:
         :return: True if uploaded criteria file has changed since the previous reset.
         """
         return State._reset(State._IS_CRITERIA_FILE_CHANGED_TEXT)
+
+    @staticmethod
+    def set_contractors_file_changed():
+        State._set(State._IS_CONTRACTORS_FILE_CHANGED_TEXT)
+
+    @staticmethod
+    def reset_contractors_file_changed():
+        """
+        Atomically check whether the uploaded contractors file has recently changed
+        and reset this status flag back to False, so the subsequent
+        checks will fail until the next change of file.
+
+        :return: True if uploaded contractors file has changed since the previous reset.
+        """
+        return State._reset(State._IS_CONTRACTORS_FILE_CHANGED_TEXT)
 
     @staticmethod
     def _set(flag_name: str):
@@ -63,6 +79,7 @@ class Criterion:
 
 class Contractor:
     NAME_TEXT = "Название"
+    FILE_NAME = "contractors.csv"
 
     def __init__(self, name: str = "", scores: Optional[dict[str, int]] = None):
         self.scores = scores if scores is not None else {}
@@ -81,6 +98,15 @@ class Contractor:
                 data[criterion.name].append(score)
         data[Contractor.NAME_TEXT] = names  # TODO (minor): wrong order of columns
         return pd.DataFrame(data)
+
+    @staticmethod
+    def from_dataframe(criteria: list[Criterion], dataframe: pd.DataFrame) -> list["Contractor"]:
+        return [Contractor._from_row(criteria, row) for _, row in dataframe.iterrows()]
+
+    @staticmethod
+    def _from_row(criteria: list[Criterion], row: pd.Series) -> "Contractor":
+        scores = {criterion.name: row[criterion.name] for criterion in criteria}
+        return Contractor(row[Contractor.NAME_TEXT], scores)
 
 
 @st.cache_resource
@@ -150,6 +176,12 @@ def create_contractors_view(criteria: list[Criterion], contractors: list[Contrac
     if len(criteria) == 0:
         st.error("Невозможно отобразить данные о подрядчиках, пока не заданы критерии")
         return
+    csv_file = st.file_uploader("Загрузить подрядчиков", type="csv", on_change=State.set_contractors_file_changed)
+    if State.reset_contractors_file_changed() and csv_file is not None:
+        dataframe = pd.read_csv(csv_file, index_col=0)
+        uploaded_contractors = Contractor.from_dataframe(criteria, dataframe)
+        contractors.clear()
+        contractors.extend(uploaded_contractors)
     large_column_weight = 24 // (len(criteria) + 1)
     column_width_weights = [1, 8] + [large_column_weight] * len(criteria) + [1]
     with st.container():
@@ -179,6 +211,10 @@ def create_contractors_view(criteria: list[Criterion], contractors: list[Contrac
                 st.button(":x:", key=f"contractor_remove_{contractor_index}", help="Удалить подрядчика")
     st.button(":heavy_plus_sign:", key="contractor_add", help="Добавить подрядчика",
               on_click=lambda: contractors.append(Contractor()))
+    serialized_contractors = convert_to_csv(Contractor.to_dataframe(criteria, contractors))
+    st.download_button("Скачать подрядчиков", serialized_contractors,
+                       file_name=Contractor.FILE_NAME,
+                       mime="text/csv")
     st.dataframe(Contractor.to_dataframe(criteria, contractors))  # TODO: for debug purposes only, remove later
 
 
