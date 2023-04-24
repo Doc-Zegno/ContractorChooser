@@ -223,9 +223,10 @@ def create_contractors_view(criteria: list[Criterion], contractors: list[Contrac
             with columns[-2]:
                 st.text(f"{contractor.calculate_total_score(criteria):.2f}")
             with columns[-1]:
-                # def remove_contractor(i: int = contractor_index):  # FIXME: is invoked automatically for some reason
-                #     contractors.pop(i)
-                st.button(":x:", key=f"contractor_remove_{contractor_index}", help="Удалить подрядчика")
+                def remove_contractor(i: int = contractor_index):
+                    contractors.pop(i)
+                st.button(":x:", key=f"contractor_remove_{contractor_index}", help="Удалить подрядчика",
+                          on_click=remove_contractor)
     st.button(":heavy_plus_sign:", key="contractor_add", help="Добавить подрядчика",
               on_click=lambda: contractors.append(Contractor()))
     serialized_contractors = convert_to_csv(Contractor.to_dataframe(criteria, contractors))
