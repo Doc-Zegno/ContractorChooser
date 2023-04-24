@@ -185,15 +185,16 @@ def create_contractors_view(criteria: list[Criterion], contractors: list[Contrac
         uploaded_contractors = Contractor.from_dataframe(criteria, dataframe)
         contractors.clear()
         contractors.extend(uploaded_contractors)
-    large_column_weight = 24 // (len(criteria) + 2)
-    column_width_weights = [1, 8] + [large_column_weight] * (len(criteria) + 1) + [1]
+    column_width_weights = [1, 5, 10, 2, 1]
     with st.container():
         columns = st.columns(column_width_weights)
         with columns[1]:
             st.text(Contractor.NAME_TEXT)
-        for criterion_index, criterion in enumerate(criteria):
-            with columns[2 + criterion_index]:
-                st.text(criterion.name)
+        with columns[2]:
+            criterion_columns = st.columns(len(criteria))
+            for criterion_index, criterion in enumerate(criteria):
+                with criterion_columns[criterion_index]:
+                    st.text(criterion.name)
         with columns[-2]:
             st.text("Балл", help="Суммарная оценка подрядчика с учетом всех критериев")
     for contractor_index, contractor in enumerate(contractors):
@@ -204,13 +205,15 @@ def create_contractors_view(criteria: list[Criterion], contractors: list[Contrac
             with columns[1]:
                 contractor.name = st.text_input(Contractor.NAME_TEXT, key=f"contractor_name_{contractor_index}",
                                                 value=contractor.name, label_visibility="collapsed")
-            for criterion_index, criterion in enumerate(criteria):
-                with columns[2 + criterion_index]:
-                    old_score = contractor.scores.get(criterion.name, 0)
-                    new_score = st.number_input(criterion.name, value=old_score, label_visibility="collapsed",
-                                                key=f"contractor_{contractor_index}_criterion_{criterion_index}",
-                                                min_value=0, max_value=5)
-                    contractor.scores[criterion.name] = new_score
+            with columns[2]:
+                criterion_columns = st.columns(len(criteria))
+                for criterion_index, criterion in enumerate(criteria):
+                    with criterion_columns[criterion_index]:
+                        old_score = contractor.scores.get(criterion.name, 0)
+                        new_score = st.number_input(criterion.name, value=old_score, label_visibility="collapsed",
+                                                    key=f"contractor_{contractor_index}_criterion_{criterion_index}",
+                                                    min_value=0, max_value=5)
+                        contractor.scores[criterion.name] = new_score
             with columns[-2]:
                 st.text(f"{contractor.calculate_total_score(criteria):.2f}")
             with columns[-1]:
