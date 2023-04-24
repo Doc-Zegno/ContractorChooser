@@ -85,6 +85,9 @@ class Contractor:
         self.scores = scores if scores is not None else {}
         self.name = name
 
+    def calculate_total_score(self, criteria: list[Criterion]) -> float:
+        return sum(map(lambda criterion: self.scores.get(criterion.name, 0) * criterion.value, criteria))
+
     @staticmethod
     def to_dataframe(criteria: list[Criterion], contractors: list["Contractor"]) -> pd.DataFrame:
         data: dict[str, Union[list[int], list[str]]] = {}
@@ -182,8 +185,8 @@ def create_contractors_view(criteria: list[Criterion], contractors: list[Contrac
         uploaded_contractors = Contractor.from_dataframe(criteria, dataframe)
         contractors.clear()
         contractors.extend(uploaded_contractors)
-    large_column_weight = 24 // (len(criteria) + 1)
-    column_width_weights = [1, 8] + [large_column_weight] * len(criteria) + [1]
+    large_column_weight = 24 // (len(criteria) + 2)
+    column_width_weights = [1, 8] + [large_column_weight] * (len(criteria) + 1) + [1]
     with st.container():
         columns = st.columns(column_width_weights)
         with columns[1]:
@@ -191,6 +194,8 @@ def create_contractors_view(criteria: list[Criterion], contractors: list[Contrac
         for criterion_index, criterion in enumerate(criteria):
             with columns[2 + criterion_index]:
                 st.text(criterion.name)
+        with columns[-2]:
+            st.text("Балл", help="Суммарная оценка подрядчика с учетом всех критериев")
     for contractor_index, contractor in enumerate(contractors):
         with st.container():
             columns = st.columns(column_width_weights)
@@ -206,6 +211,8 @@ def create_contractors_view(criteria: list[Criterion], contractors: list[Contrac
                                                 key=f"contractor_{contractor_index}_criterion_{criterion_index}",
                                                 min_value=0, max_value=5)
                     contractor.scores[criterion.name] = new_score
+            with columns[-2]:
+                st.text(f"{contractor.calculate_total_score(criteria):.2f}")
             with columns[-1]:
                 # def remove_contractor(i: int = contractor_index):  # FIXME: is invoked automatically for some reason
                 #     contractors.pop(i)
