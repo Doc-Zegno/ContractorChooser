@@ -147,7 +147,7 @@ def create_criteria_view(criteria: list[Criterion]):
         uploaded_criteria = Criterion.from_dataframe(dataframe)
         criteria.clear()
         criteria.extend(uploaded_criteria)
-    column_width_weights = [1, 8, 8, 1]
+    column_width_weights = [1, 30, 20, 1]
     with st.container():
         columns = st.columns(column_width_weights)
         with columns[1]:
@@ -191,7 +191,7 @@ def create_contractors_view(criteria: list[Criterion], contractors: list[Contrac
         uploaded_contractors = Contractor.from_dataframe(criteria, dataframe)
         contractors.clear()
         contractors.extend(uploaded_contractors)
-    column_width_weights = [1, 5, 10, 2, 1]
+    column_width_weights = [1, 15, 33, 2, 1]
     with st.container():
         columns = st.columns(column_width_weights)
         with columns[1]:
@@ -257,6 +257,7 @@ def create_result_view(criteria: list[Criterion], contractors: list[Contractor])
 
 
 def main():
+    st.set_page_config(layout="wide")
     criteria = create_initial_criteria()
     create_criteria_view(criteria)
     contractors = create_initial_contractors()
