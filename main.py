@@ -89,6 +89,12 @@ class Contractor:
         return sum(map(lambda criterion: self.scores.get(criterion.name, 0) * criterion.value, criteria))
 
     @staticmethod
+    def find_best(criteria: list[Criterion], contractors: list["Contractor"]) -> list["Contractor"]:
+        total_scores = [contractor.calculate_total_score(criteria) for contractor in contractors]
+        max_score = max(total_scores)
+        return [contractor for contractor, total_score in zip(contractors, total_scores) if total_score == max_score]
+
+    @staticmethod
     def to_dataframe(criteria: list[Criterion], contractors: list["Contractor"]) -> pd.DataFrame:
         data: dict[str, Union[list[int], list[str]]] = {}
         names = []
@@ -229,11 +235,33 @@ def create_contractors_view(criteria: list[Criterion], contractors: list[Contrac
     st.dataframe(Contractor.to_dataframe(criteria, contractors))  # TODO: for debug purposes only, remove later
 
 
+def get_best_contractor_text(best_contractors: list[Contractor]) -> str:
+    assert len(best_contractors) > 0
+    if len(best_contractors) == 1:
+        return f"Лучший подрядчик: {best_contractors[0].name}"
+    else:
+        markdown = "Лучшие подрядчики:"
+        for contractor in best_contractors:
+            markdown += f"\n * {contractor.name}"
+        return markdown
+
+
+def create_result_view(criteria: list[Criterion], contractors: list[Contractor]):
+    st.header("Результат")
+    if len(contractors) == 0:
+        st.info("Задайте подрядчиков, чтобы рассчитать наилучшего из них")
+        return
+    if st.button("Рассчитать лучшего подрядчика", key="contractor_calculate_best"):
+        best_contractors = Contractor.find_best(criteria, contractors)
+        st.success(get_best_contractor_text(best_contractors))
+
+
 def main():
     criteria = create_initial_criteria()
     create_criteria_view(criteria)
     contractors = create_initial_contractors()
     create_contractors_view(criteria, contractors)
+    create_result_view(criteria, contractors)
 
 
 main()
