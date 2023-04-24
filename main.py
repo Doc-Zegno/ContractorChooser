@@ -203,7 +203,8 @@ def create_contractors_view(criteria: list[Criterion], contractors: list[Contrac
                 with columns[2 + criterion_index]:
                     old_score = contractor.scores.get(criterion.name, 0)
                     new_score = st.number_input(criterion.name, value=old_score, label_visibility="collapsed",
-                                                key=f"contractor_{contractor_index}_criterion_{criterion_index}")
+                                                key=f"contractor_{contractor_index}_criterion_{criterion_index}",
+                                                min_value=0, max_value=5)
                     contractor.scores[criterion.name] = new_score
             with columns[-1]:
                 # def remove_contractor(i: int = contractor_index):  # FIXME: is invoked automatically for some reason
