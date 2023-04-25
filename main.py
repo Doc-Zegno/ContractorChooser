@@ -270,7 +270,7 @@ def create_contractors_view(has_errors: bool, criteria: list[Criterion], contrac
         uploaded_contractors = Contractor.from_dataframe(criteria, dataframe)
         contractors.clear()
         contractors.extend(uploaded_contractors)
-    column_width_weights = [1, 15, 33, 2, 1]
+    column_width_weights = [1, 14, 33, 3, 1]
     with st.container():
         columns = st.columns(column_width_weights)
         with columns[1]:
