@@ -311,10 +311,26 @@ def create_result_view(criteria: list[Criterion], contractors: list[Contractor])
         st.success(get_best_contractor_text(best_contractors))
 
 
+def get_problems_text(lines: list[str]) -> str:
+    assert len(lines) > 0
+    if len(lines) == 1:
+        return lines[0]
+    else:
+        return "\n".join(map(lambda l: " * " + l, lines))
+
+
+def create_problems_view(problems: Problems):
+    if problems.has_errors:
+        st.error(get_problems_text(problems.errors))
+    if problems.has_warnings:
+        st.warning(get_problems_text(problems.warnings))
+
+
 def main():
     st.set_page_config(layout="wide")
     criteria = create_initial_criteria()
-    create_criteria_view(criteria)
+    criteria_problems = create_criteria_view(criteria)
+    create_problems_view(criteria_problems)
     contractors = create_initial_contractors()
     create_contractors_view(criteria, contractors)
     create_result_view(criteria, contractors)
