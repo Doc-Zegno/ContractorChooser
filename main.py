@@ -212,7 +212,7 @@ def create_criteria_view(criteria: list[Criterion]) -> Problems:
                 st.text(f"{index + 1}.")
             with columns[1]:
                 criterion.name = st.text_input(Criterion.NAME_TEXT, key=f"criterion_name_{index}", value=criterion.name,
-                                               label_visibility="collapsed")
+                                               label_visibility="collapsed").strip()
             with columns[2]:
                 criterion.value = st.number_input(Criterion.VALUE_TEXT, key=f"criterion_value_{index}",
                                                   value=criterion.value, min_value=0.0, max_value=1.0,
@@ -264,7 +264,7 @@ def create_contractors_view(criteria: list[Criterion], contractors: list[Contrac
                 st.text(f"{contractor_index + 1}.")
             with columns[1]:
                 contractor.name = st.text_input(Contractor.NAME_TEXT, key=f"contractor_name_{contractor_index}",
-                                                value=contractor.name, label_visibility="collapsed")
+                                                value=contractor.name, label_visibility="collapsed").strip()
             with columns[2]:
                 criterion_columns = st.columns(len(criteria))
                 for criterion_index, criterion in enumerate(criteria):
