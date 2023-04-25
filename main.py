@@ -102,7 +102,7 @@ class Contractor:
         for contractor in contractors:
             names.append(contractor.name)
             for criterion in criteria:
-                score = contractor.scores[criterion.name]  # TODO: gracefully handle missing values here
+                score = contractor.scores.get(criterion.name, 0)
                 scores[criterion.name].append(score)
         data = {Contractor.NAME_TEXT: names, **scores}
         return pd.DataFrame(data)
