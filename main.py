@@ -234,11 +234,12 @@ def create_criteria_view(criteria: list[Criterion]) -> Problems:
     return problems
 
 
-def create_contractors_view(criteria: list[Criterion], contractors: list[Contractor]):
+def create_contractors_view(has_errors: bool, criteria: list[Criterion], contractors: list[Contractor]) -> Problems:
     st.header("Подрядчики")
-    if len(criteria) == 0:
-        st.error("Невозможно отобразить данные о подрядчиках, пока не заданы критерии")
-        return
+    problems = Problems()
+    if has_errors or len(criteria) == 0:
+        problems.add_error("Невозможно отобразить данные о подрядчиках, пока не заданы корректные критерии")
+        return problems
     csv_file = st.file_uploader("Загрузить подрядчиков", type="csv", on_change=State.set_contractors_file_changed)
     if State.reset_contractors_file_changed() and csv_file is not None:
         dataframe = pd.read_csv(csv_file, index_col=0)
@@ -288,6 +289,7 @@ def create_contractors_view(criteria: list[Criterion], contractors: list[Contrac
                        file_name=Contractor.FILE_NAME,
                        mime="text/csv")
     st.dataframe(Contractor.to_dataframe(criteria, contractors))  # TODO: for debug purposes only, remove later
+    return problems
 
 
 def get_best_contractor_text(best_contractors: list[Contractor]) -> str:
@@ -332,7 +334,8 @@ def main():
     criteria_problems = create_criteria_view(criteria)
     create_problems_view(criteria_problems)
     contractors = create_initial_contractors()
-    create_contractors_view(criteria, contractors)
+    contractors_problems = create_contractors_view(criteria_problems.has_errors, criteria, contractors)
+    create_problems_view(contractors_problems)
     create_result_view(criteria, contractors)
 
 
