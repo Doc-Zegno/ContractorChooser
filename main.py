@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional
 import streamlit as st
 import pandas as pd
 import math
@@ -97,16 +97,14 @@ class Contractor:
 
     @staticmethod
     def to_dataframe(criteria: list[Criterion], contractors: list["Contractor"]) -> pd.DataFrame:
-        data: dict[str, Union[list[int], list[str]]] = {}
+        scores = {criterion.name: [] for criterion in criteria}
         names = []
-        for criterion in criteria:
-            data[criterion.name] = []
         for contractor in contractors:
             names.append(contractor.name)
             for criterion in criteria:
                 score = contractor.scores[criterion.name]  # TODO: gracefully handle missing values here
-                data[criterion.name].append(score)
-        data[Contractor.NAME_TEXT] = names  # TODO (minor): wrong order of columns
+                scores[criterion.name].append(score)
+        data = {Contractor.NAME_TEXT: names, **scores}
         return pd.DataFrame(data)
 
     @staticmethod
