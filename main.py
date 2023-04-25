@@ -234,6 +234,26 @@ def create_criteria_view(criteria: list[Criterion]) -> Problems:
     return problems
 
 
+def validate_contractors(problems: Problems, criteria: list[Criterion], contractors: list[Contractor]):
+    duplicates = set()
+    names = set()
+    if len(contractors) == 0:
+        problems.add_error("Не задано ни одного подрядчика")
+        return
+    for index, contractor in enumerate(contractors):
+        if contractor.name == "":
+            problems.add_error(f"Не задано название подрядчика №{index + 1}")
+        elif contractor.name in names:
+            if contractor.name not in duplicates:
+                problems.add_error(f"Несколько подрядчиков с одним и тем же названием: {contractor.name}")
+                duplicates.add(contractor.name)
+        else:
+            names.add(contractor.name)
+            for criterion in criteria:
+                if contractor.scores.get(criterion.name, 0) == 0:
+                    problems.add_warning(f"{contractor.name}: не задан балл для критерия '{criterion.name}'")
+
+
 def create_contractors_view(has_errors: bool, criteria: list[Criterion], contractors: list[Contractor]) -> Problems:
     st.header("Подрядчики")
     problems = Problems()
@@ -284,10 +304,12 @@ def create_contractors_view(has_errors: bool, criteria: list[Criterion], contrac
                           on_click=remove_contractor)
     st.button(":heavy_plus_sign:", key="contractor_add", help="Добавить подрядчика",
               on_click=lambda: contractors.append(Contractor()))
-    serialized_contractors = convert_to_csv(Contractor.to_dataframe(criteria, contractors))
-    st.download_button("Скачать подрядчиков", serialized_contractors,
-                       file_name=Contractor.FILE_NAME,
-                       mime="text/csv")
+    validate_contractors(problems, criteria, contractors)
+    if not problems.has_errors:
+        serialized_contractors = convert_to_csv(Contractor.to_dataframe(criteria, contractors))
+        st.download_button("Скачать подрядчиков", serialized_contractors,
+                           file_name=Contractor.FILE_NAME,
+                           mime="text/csv")
     st.dataframe(Contractor.to_dataframe(criteria, contractors))  # TODO: for debug purposes only, remove later
     return problems
 
