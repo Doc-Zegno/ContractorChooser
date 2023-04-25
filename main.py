@@ -354,8 +354,22 @@ def create_problems_view(problems: Problems):
         st.warning(get_problems_text(problems.warnings))
 
 
+def enable_vertical_alignment():
+    # Workaround from https://github.com/streamlit/streamlit/issues/3052
+    st.write(
+        """<style>
+        [data-testid="stHorizontalBlock"] {
+            align-items: center;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+
 def main():
     st.set_page_config(layout="wide")
+    enable_vertical_alignment()
     criteria = create_initial_criteria()
     criteria_problems = create_criteria_view(criteria)
     create_problems_view(criteria_problems)
