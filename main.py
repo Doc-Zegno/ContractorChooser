@@ -167,7 +167,7 @@ def create_initial_contractors() -> list[Contractor]:
 
 @st.cache_data
 def convert_to_csv(dataframe: pd.DataFrame) -> bytes:
-    return dataframe.to_csv().encode("utf-8")
+    return dataframe.to_csv(index=False).encode("utf-8")
 
 
 def validate_criteria(criteria: list[Criterion]) -> Problems:
@@ -196,7 +196,7 @@ def create_criteria_view(criteria: list[Criterion]) -> Problems:
     st.header("Критерии")
     csv_file = st.file_uploader("Загрузить критерии", type="csv", on_change=State.set_criteria_file_changed)
     if State.reset_criteria_file_changed() and csv_file is not None:
-        dataframe = pd.read_csv(csv_file, index_col=0)
+        dataframe = pd.read_csv(csv_file)
         uploaded_criteria = Criterion.from_dataframe(dataframe)
         criteria.clear()
         criteria.extend(uploaded_criteria)
@@ -264,7 +264,7 @@ def create_contractors_view(has_errors: bool, criteria: list[Criterion], contrac
         return problems
     csv_file = st.file_uploader("Загрузить подрядчиков", type="csv", on_change=State.set_contractors_file_changed)
     if State.reset_contractors_file_changed() and csv_file is not None:
-        dataframe = pd.read_csv(csv_file, index_col=0)
+        dataframe = pd.read_csv(csv_file)
         uploaded_contractors = Contractor.from_dataframe(criteria, dataframe)
         contractors.clear()
         contractors.extend(uploaded_contractors)
