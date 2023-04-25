@@ -146,6 +146,10 @@ class Problems:
     def has_errors(self) -> bool:
         return len(self._errors) > 0
 
+    @property
+    def has_issues(self) -> bool:
+        return self.has_errors or self.has_warnings
+
 
 @st.cache_resource
 def create_initial_criteria() -> list[Criterion]:
@@ -325,10 +329,10 @@ def get_best_contractor_text(best_contractors: list[Contractor]) -> str:
         return markdown
 
 
-def create_result_view(criteria: list[Criterion], contractors: list[Contractor]):
+def create_result_view(has_problems: bool, criteria: list[Criterion], contractors: list[Contractor]):
     st.header("Результат")
-    if len(contractors) == 0:
-        st.info("Задайте подрядчиков, чтобы рассчитать наилучшего из них")
+    if has_problems:
+        st.info("Устраните выявленные проблемы, чтобы рассчитать наилучшего подрядчика")
         return
     if st.button("Рассчитать лучшего подрядчика", key="contractor_calculate_best"):
         best_contractors = Contractor.find_best(criteria, contractors)
@@ -358,7 +362,8 @@ def main():
     contractors = create_initial_contractors()
     contractors_problems = create_contractors_view(criteria_problems.has_errors, criteria, contractors)
     create_problems_view(contractors_problems)
-    create_result_view(criteria, contractors)
+    has_problems = criteria_problems.has_issues or contractors_problems.has_issues
+    create_result_view(has_problems, criteria, contractors)
 
 
 main()
