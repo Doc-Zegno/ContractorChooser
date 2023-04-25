@@ -1,6 +1,7 @@
 from typing import Optional, Union
 import streamlit as st
 import pandas as pd
+import math
 
 
 class State:
@@ -118,6 +119,34 @@ class Contractor:
         return Contractor(row[Contractor.NAME_TEXT], scores)
 
 
+class Problems:
+    def __init__(self):
+        self._warnings = []
+        self._errors = []
+
+    def add_warning(self, warning: str):
+        self._warnings.append(warning)
+
+    def add_error(self, error: str):
+        self._errors.append(error)
+
+    @property
+    def warnings(self) -> list[str]:
+        return self._warnings
+
+    @property
+    def errors(self) -> list[str]:
+        return self._errors
+
+    @property
+    def has_warnings(self) -> bool:
+        return len(self._warnings) > 0
+
+    @property
+    def has_errors(self) -> bool:
+        return len(self._errors) > 0
+
+
 @st.cache_resource
 def create_initial_criteria() -> list[Criterion]:
     return [
@@ -139,7 +168,29 @@ def convert_to_csv(dataframe: pd.DataFrame) -> bytes:
     return dataframe.to_csv().encode("utf-8")
 
 
-def create_criteria_view(criteria: list[Criterion]):
+def validate_criteria(criteria: list[Criterion]) -> Problems:
+    problems = Problems()
+    duplicates = set()
+    names = set()
+    if len(criteria) == 0:
+        problems.add_error("Не задано ни одного критерия")
+        return problems  # No need to check any further
+    for index, criterion in enumerate(criteria):
+        if criterion.name == "":
+            problems.add_error(f"Не задано название критерия №{index + 1}")
+        elif criterion.name in names:
+            if criterion.name not in duplicates:
+                problems.add_error(f"Несколько критериев с одним и тем же названием: {criterion.name}")
+                duplicates.add(criterion.name)
+        else:
+            names.add(criterion.name)
+    total_value = sum(map(lambda c: c.value, criteria))
+    if not math.isclose(total_value, 1.0):
+        problems.add_warning(f"Суммарная значимость критериев ({total_value:.2f}) не равна 1")
+    return problems
+
+
+def create_criteria_view(criteria: list[Criterion]) -> Problems:
     st.header("Критерии")
     csv_file = st.file_uploader("Загрузить критерии", type="csv", on_change=State.set_criteria_file_changed)
     if State.reset_criteria_file_changed() and csv_file is not None:
@@ -173,11 +224,14 @@ def create_criteria_view(criteria: list[Criterion]):
                           on_click=remove_criterion)
     st.button(":heavy_plus_sign:", key="criterion_add", help="Добавить критерий",
               on_click=lambda: criteria.append(Criterion()))
-    serialized_criteria = convert_to_csv(Criterion.to_dataframe(criteria))
-    st.download_button("Скачать критерии", serialized_criteria,
-                       file_name=Criterion.FILE_NAME,
-                       mime="text/csv")
+    problems = validate_criteria(criteria)
+    if not problems.has_errors:
+        serialized_criteria = convert_to_csv(Criterion.to_dataframe(criteria))
+        st.download_button("Скачать критерии", serialized_criteria,
+                           file_name=Criterion.FILE_NAME,
+                           mime="text/csv")
     st.dataframe(Criterion.to_dataframe(criteria))  # TODO: for debug purposes only, remove later
+    return problems
 
 
 def create_contractors_view(criteria: list[Criterion], contractors: list[Contractor]):
