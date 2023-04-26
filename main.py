@@ -5,8 +5,22 @@ import math
 
 
 class State:
+    _KEY_COUNTER_TEXT = "key_counter"
     _IS_CRITERIA_FILE_CHANGED_TEXT = "is_criteria_file_changed"
     _IS_CONTRACTORS_FILE_CHANGED_TEXT = "is_contractors_file_changed"
+
+    @staticmethod
+    def generate_key() -> str:
+        """
+        Generate a string which can be used as a key for any widget.
+        Guaranteed to be unique, also changes every time
+        the application page is refreshed.
+        """
+        if State._KEY_COUNTER_TEXT not in st.session_state:
+            st.session_state[State._KEY_COUNTER_TEXT] = 0
+        index = st.session_state[State._KEY_COUNTER_TEXT]
+        st.session_state[State._KEY_COUNTER_TEXT] += 1
+        return f"generated_key_{index}"
 
     @staticmethod
     def set_criteria_file_changed():
@@ -170,6 +184,23 @@ def convert_to_csv(dataframe: pd.DataFrame) -> bytes:
     return dataframe.to_csv(index=False).encode("utf-8")
 
 
+def create_criterion_value_input(criterion: Criterion):
+    def save_value(widget_key: str):
+        criterion.value = st.session_state[widget_key]
+    key = State.generate_key()
+    st.number_input(Criterion.VALUE_TEXT, value=criterion.value, min_value=0.0, max_value=1.0, key=key,
+                    label_visibility="collapsed", on_change=lambda: save_value(key))
+
+
+def create_contractor_score_input(criterion: Criterion, contractor: Contractor):
+    def save_score(widget_key: str):
+        contractor.scores[criterion.name] = st.session_state[widget_key]
+    key = State.generate_key()
+    old_score = contractor.scores.get(criterion.name, 0)
+    st.number_input(criterion.name, value=old_score, label_visibility="collapsed", key=key,
+                    min_value=0, max_value=5, on_change=lambda: save_score(key))
+
+
 def validate_criteria(criteria: list[Criterion]) -> Problems:
     problems = Problems()
     duplicates = set()
@@ -216,9 +247,7 @@ def create_criteria_view(criteria: list[Criterion]) -> Problems:
                 criterion.name = st.text_input(Criterion.NAME_TEXT, key=f"criterion_name_{index}", value=criterion.name,
                                                label_visibility="collapsed").strip()
             with columns[2]:
-                criterion.value = st.number_input(Criterion.VALUE_TEXT, key=f"criterion_value_{index}",
-                                                  value=criterion.value, min_value=0.0, max_value=1.0,
-                                                  label_visibility="collapsed")
+                create_criterion_value_input(criterion)
             with columns[3]:
                 def remove_criterion(i: int = index):
                     criteria.pop(i)
@@ -292,11 +321,7 @@ def create_contractors_view(has_errors: bool, criteria: list[Criterion], contrac
                 criterion_columns = st.columns(len(criteria))
                 for criterion_index, criterion in enumerate(criteria):
                     with criterion_columns[criterion_index]:
-                        old_score = contractor.scores.get(criterion.name, 0)
-                        new_score = st.number_input(criterion.name, value=old_score, label_visibility="collapsed",
-                                                    key=f"contractor_{contractor_index}_criterion_{criterion_index}",
-                                                    min_value=0, max_value=5)
-                        contractor.scores[criterion.name] = new_score
+                        create_contractor_score_input(criterion, contractor)
             with columns[-2]:
                 st.text(f"{contractor.calculate_total_score(criteria):.2f}")
             with columns[-1]:
