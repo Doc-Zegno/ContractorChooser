@@ -391,7 +391,7 @@ def enable_vertical_alignment():
 
 
 def main():
-    st.set_page_config(layout="wide")
+    st.set_page_config(page_title="Выбор Подрядчика", layout="wide")
     enable_vertical_alignment()
     criteria = create_initial_criteria()
     criteria_problems = create_criteria_view(criteria)
