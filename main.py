@@ -272,7 +272,6 @@ def create_criteria_view(criteria: list[Criterion]) -> Problems:
         st.download_button("Скачать критерии", serialized_criteria,
                            file_name=Criterion.FILE_NAME,
                            mime="text/csv")
-    st.dataframe(Criterion.to_dataframe(criteria))  # TODO: for debug purposes only, remove later
     return problems
 
 
@@ -348,7 +347,6 @@ def create_contractors_view(has_errors: bool, criteria: list[Criterion], contrac
         st.download_button("Скачать подрядчиков", serialized_contractors,
                            file_name=Contractor.FILE_NAME,
                            mime="text/csv")
-    st.dataframe(Contractor.to_dataframe(criteria, contractors))  # TODO: for debug purposes only, remove later
     return problems
 
 
