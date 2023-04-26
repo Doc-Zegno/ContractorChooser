@@ -355,7 +355,7 @@ def get_best_contractor_text(best_contractors: list[Contractor]) -> str:
 def create_result_view(has_problems: bool, criteria: list[Criterion], contractors: list[Contractor]):
     st.header("Результат")
     if has_problems:
-        st.info("Устраните выявленные проблемы, чтобы рассчитать наилучшего подрядчика")
+        st.info("Устраните выявленные проблемы, чтобы рассчитать наилучшего подрядчика", icon="ℹ")
         return
     if st.button("Рассчитать лучшего подрядчика", key="contractor_calculate_best"):
         best_contractors = Contractor.find_best(criteria, contractors)
@@ -372,9 +372,9 @@ def get_problems_text(lines: list[str]) -> str:
 
 def create_problems_view(problems: Problems):
     if problems.has_errors:
-        st.error(get_problems_text(problems.errors))
+        st.error(get_problems_text(problems.errors), icon="🚨")
     if problems.has_warnings:
-        st.warning(get_problems_text(problems.warnings))
+        st.warning(get_problems_text(problems.warnings), icon="⚠")
 
 
 def enable_vertical_alignment():
