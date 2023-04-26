@@ -103,9 +103,35 @@ class Problems:
 
 
 class State:
+    _INITIAL_CRITERIA = [
+        Criterion("Цена", 0.35),
+        Criterion("Качество", 0.55),
+        Criterion("Удаленность", 0.1),
+    ]
+
+    _INITIAL_CONTRACTORS = [
+        Contractor("Рога и Копыта", {"Цена": 3, "Качество": 4, "Удаленность": 2})
+    ]
+
+    _CRITERIA_TEXT = "criteria"
+    _CONTRACTORS_TEXT = "contractors"
     _KEY_COUNTER_TEXT = "key_counter"
     _IS_CRITERIA_FILE_CHANGED_TEXT = "is_criteria_file_changed"
     _IS_CONTRACTORS_FILE_CHANGED_TEXT = "is_contractors_file_changed"
+
+    @staticmethod
+    def get_criteria() -> list[Criterion]:
+        return State._get(State._CRITERIA_TEXT, default_value=State._INITIAL_CRITERIA)
+
+    @staticmethod
+    def get_contractors() -> list[Contractor]:
+        return State._get(State._CONTRACTORS_TEXT, default_value=State._INITIAL_CONTRACTORS)
+
+    @staticmethod
+    def _get(value_name: str, default_value):
+        if value_name not in st.session_state:
+            st.session_state[value_name] = default_value
+        return st.session_state[value_name]
 
     @staticmethod
     def generate_key() -> str:
@@ -161,22 +187,6 @@ class State:
         has_flag_been_set = st.session_state[flag_name]
         st.session_state[flag_name] = False
         return has_flag_been_set
-
-
-@st.cache_resource
-def create_initial_criteria() -> list[Criterion]:
-    return [
-        Criterion("Цена", 0.35),
-        Criterion("Качество", 0.65),
-        Criterion("Удаленность", 0.1),
-    ]
-
-
-@st.cache_resource
-def create_initial_contractors() -> list[Contractor]:
-    return [
-        Contractor("Рога и Копыта", {"Цена": 3, "Качество": 4, "Удаленность": 2})
-    ]
 
 
 @st.cache_data
@@ -393,10 +403,10 @@ def enable_vertical_alignment():
 def main():
     st.set_page_config(page_title="Выбор Подрядчика", layout="wide")
     enable_vertical_alignment()
-    criteria = create_initial_criteria()
+    criteria = State.get_criteria()
     criteria_problems = create_criteria_view(criteria)
     create_problems_view(criteria_problems)
-    contractors = create_initial_contractors()
+    contractors = State.get_contractors()
     contractors_problems = create_contractors_view(criteria_problems.has_errors, criteria, contractors)
     create_problems_view(contractors_problems)
     has_problems = criteria_problems.has_issues or contractors_problems.has_issues
