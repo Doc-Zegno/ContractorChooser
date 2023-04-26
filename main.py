@@ -46,7 +46,8 @@ class Contractor:
     def find_best(criteria: list[Criterion], contractors: list["Contractor"]) -> list["Contractor"]:
         total_scores = [contractor.calculate_total_score(criteria) for contractor in contractors]
         max_score = max(total_scores)
-        return [contractor for contractor, total_score in zip(contractors, total_scores) if total_score == max_score]
+        return [contractor for contractor, total_score in zip(contractors, total_scores)
+                if math.isclose(total_score, max_score)]
 
     @staticmethod
     def to_dataframe(criteria: list[Criterion], contractors: list["Contractor"]) -> pd.DataFrame:
