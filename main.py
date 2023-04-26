@@ -4,6 +4,9 @@ import pandas as pd
 import math
 
 
+APP_VERSION = "1.0.0"
+
+
 class Criterion:
     NAME_TEXT = "Название"
     VALUE_TEXT = "Значимость"
@@ -399,6 +402,10 @@ def enable_vertical_alignment():
     )
 
 
+def create_footer():
+    st.text(f"v{APP_VERSION}")
+
+
 def main():
     st.set_page_config(page_title="Выбор Подрядчика", layout="wide")
     enable_vertical_alignment()
@@ -410,6 +417,7 @@ def main():
     create_problems_view(contractors_problems)
     has_problems = criteria_problems.has_issues or contractors_problems.has_issues
     create_result_view(has_problems, criteria, contractors)
+    create_footer()
 
 
 main()
