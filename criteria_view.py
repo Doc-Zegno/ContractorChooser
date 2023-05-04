@@ -10,9 +10,10 @@ from state import State
 
 class CriteriaView:
     @staticmethod
-    def create(criteria: list[Criterion]) -> Problems:
+    def create(criteria: list[Criterion], view_key: str) -> Problems:
         st.header("Критерии")
-        csv_file = st.file_uploader("Загрузить критерии", type="csv", on_change=State.set_criteria_file_changed)
+        csv_file = st.file_uploader("Загрузить критерии", key=f"criteria_upload_{view_key}", type="csv",
+                                    on_change=State.set_criteria_file_changed)
         if State.reset_criteria_file_changed() and csv_file is not None:
             dataframe = pd.read_csv(csv_file)
             uploaded_criteria = Criterion.from_dataframe(dataframe)
@@ -31,7 +32,7 @@ class CriteriaView:
                 with columns[0]:
                     st.text(f"{index + 1}.")
                 with columns[1]:
-                    criterion.name = st.text_input(Criterion.NAME_TEXT, key=f"criterion_name_{index}",
+                    criterion.name = st.text_input(Criterion.NAME_TEXT, key=f"criterion_name_{index}_{view_key}",
                                                    value=criterion.name,
                                                    label_visibility="collapsed").strip()
                 with columns[2]:
@@ -40,9 +41,9 @@ class CriteriaView:
                     def remove_criterion(i: int = index):
                         criteria.pop(i)
 
-                    st.button(":x:", key=f"criterion_remove_{index}", help="Удалить критерий",
+                    st.button(":x:", key=f"criterion_remove_{index}_{view_key}", help="Удалить критерий",
                               on_click=remove_criterion)
-        st.button(":heavy_plus_sign:", key="criterion_add", help="Добавить критерий",
+        st.button(":heavy_plus_sign:", key=f"criterion_add_{view_key}", help="Добавить критерий",
                   on_click=lambda: criteria.append(Criterion()))
         problems = CriteriaView._validate_criteria(criteria)
         if not problems.has_errors:

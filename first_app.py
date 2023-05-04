@@ -10,6 +10,7 @@ from key import Key
 
 class FirstApp:
     TITLE = "Выбор на основе экспертных оценок"
+    ID = "first.app"
 
     _INITIAL_CONTRACTORS = [
         Contractor("Рога и Копыта", {"Цена": 3, "Качество": 4, "Удаленность": 2})
@@ -21,13 +22,13 @@ class FirstApp:
         Criterion("Удаленность", 0.1),
     ]
 
-    _CONTRACTORS_KEY = Key("contractors", default_value=_INITIAL_CONTRACTORS)
-    _CRITERIA_KEY = Key("criteria", default_value=_INITIAL_CRITERIA)
+    _CONTRACTORS_KEY = Key(f"{ID}.contractors", default_value=_INITIAL_CONTRACTORS)
+    _CRITERIA_KEY = Key(f"{ID}.criteria", default_value=_INITIAL_CRITERIA)
 
     @staticmethod
     def create():
         criteria = State.get(FirstApp._CRITERIA_KEY)
-        criteria_problems = CriteriaView.create(criteria)
+        criteria_problems = CriteriaView.create(criteria, view_key=FirstApp.ID)
         ProblemsView.create(criteria_problems)
         contractors = State.get(FirstApp._CONTRACTORS_KEY)
         contractors_problems = ContractorsView.create(criteria_problems.has_errors, criteria, contractors)
