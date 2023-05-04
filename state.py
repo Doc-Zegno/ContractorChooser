@@ -1,33 +1,20 @@
+from typing import TypeVar
 import streamlit as st
 
-from contractor import Contractor
-from criterion import Criterion
+from key import Key
+
+
+TValue = TypeVar("TValue")
 
 
 class State:
-    _INITIAL_CRITERIA = [
-        Criterion("Цена", 0.35),
-        Criterion("Качество", 0.55),
-        Criterion("Удаленность", 0.1),
-    ]
-
-    _INITIAL_CONTRACTORS = [
-        Contractor("Рога и Копыта", {"Цена": 3, "Качество": 4, "Удаленность": 2})
-    ]
-
-    _CRITERIA_TEXT = "criteria"
-    _CONTRACTORS_TEXT = "contractors"
     _KEY_COUNTER_TEXT = "key_counter"
     _IS_CRITERIA_FILE_CHANGED_TEXT = "is_criteria_file_changed"
     _IS_CONTRACTORS_FILE_CHANGED_TEXT = "is_contractors_file_changed"
 
     @staticmethod
-    def get_criteria() -> list[Criterion]:
-        return State._get(State._CRITERIA_TEXT, default_value=State._INITIAL_CRITERIA)
-
-    @staticmethod
-    def get_contractors() -> list[Contractor]:
-        return State._get(State._CONTRACTORS_TEXT, default_value=State._INITIAL_CONTRACTORS)
+    def get(key: Key[TValue]) -> TValue:
+        return State._get(key.name, key.default_value)
 
     @staticmethod
     def _get(value_name: str, default_value):
