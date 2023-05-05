@@ -10,7 +10,12 @@ from state import State
 
 class CriteriaView:
     @staticmethod
-    def create(criteria: list[Criterion], view_key: str, disable_name: bool = False) -> Problems:
+    def create(
+            criteria: list[Criterion],
+            view_key: str,
+            disable_name: bool = False,
+            disable_add_remove: bool = False
+    ) -> Problems:
         st.header("Критерии")
         csv_file = st.file_uploader("Загрузить критерии", key=f"criteria_upload_{view_key}", type="csv",
                                     on_change=State.set_criteria_file_changed)
@@ -19,7 +24,9 @@ class CriteriaView:
             uploaded_criteria = Criterion.from_dataframe(dataframe)
             criteria.clear()
             criteria.extend(uploaded_criteria)
-        column_width_weights = [1, 30, 20, 1]
+        column_width_weights = [1, 30, 20]
+        if not disable_add_remove:
+            column_width_weights.append(1)
         with st.container():
             columns = st.columns(column_width_weights)
             with columns[1]:
@@ -37,14 +44,16 @@ class CriteriaView:
                                                    label_visibility="collapsed").strip()
                 with columns[2]:
                     CriteriaView._create_criterion_value_input(criterion)
-                with columns[3]:
-                    def remove_criterion(i: int = index):
-                        criteria.pop(i)
+                if not disable_add_remove:
+                    with columns[3]:
+                        def remove_criterion(i: int = index):
+                            criteria.pop(i)
 
-                    st.button(":x:", key=f"criterion_remove_{index}_{view_key}", help="Удалить критерий",
-                              on_click=remove_criterion)
-        st.button(":heavy_plus_sign:", key=f"criterion_add_{view_key}", help="Добавить критерий",
-                  on_click=lambda: criteria.append(Criterion()))
+                        st.button(":x:", key=f"criterion_remove_{index}_{view_key}", help="Удалить критерий",
+                                  on_click=remove_criterion)
+        if not disable_add_remove:
+            st.button(":heavy_plus_sign:", key=f"criterion_add_{view_key}", help="Добавить критерий",
+                      on_click=lambda: criteria.append(Criterion()))
         problems = CriteriaView._validate_criteria(criteria)
         if not problems.has_errors:
             serialized_criteria = convert_to_csv(Criterion.to_dataframe(criteria))
