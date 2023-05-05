@@ -1,4 +1,5 @@
 from criteria_view import CriteriaView
+from problems_view import ProblemsView
 from criterion import Criterion
 from state import State
 from key import Key
@@ -21,3 +22,4 @@ class SecondApp:
     def create():
         criteria = State.get(SecondApp._CRITERIA_KEY)
         criteria_problems = CriteriaView.create(criteria, view_key=SecondApp.ID)
+        ProblemsView.create(criteria_problems)
