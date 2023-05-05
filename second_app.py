@@ -1,6 +1,8 @@
 from criteria_view import CriteriaView
+from products_view import ProductsView
 from problems_view import ProblemsView
 from criterion import Criterion
+from product import Product
 from state import State
 from key import Key
 
@@ -16,7 +18,15 @@ class SecondApp:
         Criterion("Ритмичность", 0.1),
     ]
 
+    _INITIAL_PRODUCTS = [
+        Product("A"),
+        Product("B"),
+        Product("C"),
+        Product("D"),
+    ]
+
     _CRITERIA_KEY = Key(f"{ID}.criteria", default_value=_INITIAL_CRITERIA)
+    _PRODUCTS_KEY = Key(f"{ID}.products", default_value=_INITIAL_PRODUCTS)
 
     @staticmethod
     def create():
@@ -24,3 +34,6 @@ class SecondApp:
         criteria_problems = CriteriaView.create(criteria, view_key=SecondApp.ID,
                                                 disable_name=True, disable_add_remove=True)
         ProblemsView.create(criteria_problems)
+        products = State.get(SecondApp._PRODUCTS_KEY)
+        products_problems = ProductsView.create(products)
+        ProblemsView.create(products_problems)
