@@ -10,7 +10,7 @@ from state import State
 
 class CriteriaView:
     @staticmethod
-    def create(criteria: list[Criterion], view_key: str) -> Problems:
+    def create(criteria: list[Criterion], view_key: str, disable_name: bool = False) -> Problems:
         st.header("Критерии")
         csv_file = st.file_uploader("Загрузить критерии", key=f"criteria_upload_{view_key}", type="csv",
                                     on_change=State.set_criteria_file_changed)
@@ -33,7 +33,7 @@ class CriteriaView:
                     st.text(f"{index + 1}.")
                 with columns[1]:
                     criterion.name = st.text_input(Criterion.NAME_TEXT, key=f"criterion_name_{index}_{view_key}",
-                                                   value=criterion.name,
+                                                   value=criterion.name, disabled=disable_name,
                                                    label_visibility="collapsed").strip()
                 with columns[2]:
                     CriteriaView._create_criterion_value_input(criterion)

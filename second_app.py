@@ -21,5 +21,5 @@ class SecondApp:
     @staticmethod
     def create():
         criteria = State.get(SecondApp._CRITERIA_KEY)
-        criteria_problems = CriteriaView.create(criteria, view_key=SecondApp.ID)
+        criteria_problems = CriteriaView.create(criteria, view_key=SecondApp.ID, disable_name=True)
         ProblemsView.create(criteria_problems)
