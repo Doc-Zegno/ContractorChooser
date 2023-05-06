@@ -1,8 +1,11 @@
 from criteria_view import CriteriaView
 from products_view import ProductsView
 from problems_view import ProblemsView
+from period_view import PeriodView
 from criterion import Criterion
 from product import Product
+from period import Period
+from month import Month
 from state import State
 from key import Key
 
@@ -25,8 +28,11 @@ class SecondApp:
         Product("D"),
     ]
 
+    _INITIAL_PERIOD = Period(Month.JANUARY, Month.DECEMBER)
+
     _CRITERIA_KEY = Key(f"{ID}.criteria", default_value=_INITIAL_CRITERIA)
     _PRODUCTS_KEY = Key(f"{ID}.products", default_value=_INITIAL_PRODUCTS)
+    _PERIOD_KEY = Key(f"{ID}.period", default_value=_INITIAL_PERIOD)
 
     @staticmethod
     def create():
@@ -37,3 +43,6 @@ class SecondApp:
         products = State.get(SecondApp._PRODUCTS_KEY)
         products_problems = ProductsView.create(products)
         ProblemsView.create(products_problems)
+        period = State.get(SecondApp._PERIOD_KEY)
+        period_problems = PeriodView.create(period)
+        ProblemsView.create(period_problems)
