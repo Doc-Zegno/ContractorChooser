@@ -1,8 +1,10 @@
+from suppliers_view import SuppliersView
 from criteria_view import CriteriaView
 from products_view import ProductsView
 from problems_view import ProblemsView
 from period_view import PeriodView
 from criterion import Criterion
+from supplier import Supplier
 from product import Product
 from period import Period
 from month import Month
@@ -13,6 +15,11 @@ from key import Key
 class SecondApp:
     TITLE = "Выбор на основе фактических поставок"
     ID = "second.app"
+
+    _INITIAL_SUPPLIERS = [
+        Supplier("Рога и Копыта"),
+        Supplier("Геркулес"),
+    ]
 
     _INITIAL_CRITERIA = [
         Criterion("Объем", 0.3),
@@ -30,6 +37,7 @@ class SecondApp:
 
     _INITIAL_PERIOD = Period(Month.JANUARY, Month.DECEMBER)
 
+    _SUPPLIERS_KEY = Key(f"{ID}.suppliers", default_value=_INITIAL_SUPPLIERS)
     _CRITERIA_KEY = Key(f"{ID}.criteria", default_value=_INITIAL_CRITERIA)
     _PRODUCTS_KEY = Key(f"{ID}.products", default_value=_INITIAL_PRODUCTS)
     _PERIOD_KEY = Key(f"{ID}.period", default_value=_INITIAL_PERIOD)
@@ -46,3 +54,7 @@ class SecondApp:
         period = State.get(SecondApp._PERIOD_KEY)
         period_problems = PeriodView.create(period)
         ProblemsView.create(period_problems)
+        suppliers = State.get(SecondApp._SUPPLIERS_KEY)
+        suppliers_problems = SuppliersView.create(suppliers, products, period,
+                                                  has_errors=products_problems.has_errors or period_problems.has_errors)
+        ProblemsView.create(suppliers_problems)
