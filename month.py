@@ -36,6 +36,11 @@ class Month(IntEnum):
     def localized_name(self) -> str:
         return _LOCALIZED_NAMES[self.value]
 
+    @property
+    def next(self) -> "Month":
+        next_index = (self.value + 1) % 12
+        return Month(next_index)
+
     @staticmethod
     def parse(text: str) -> "Month":
         index = _LOCALIZED_NAMES.index(text)
