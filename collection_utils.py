@@ -1,12 +1,43 @@
-from typing import TypeVar
+from typing import TypeVar, Callable
 
 
 T = TypeVar("T")
+K = TypeVar("K")
+V = TypeVar("V")
 
 
-def get(values: list[T], index: int, default: T) -> T:
+def get_or_put(values: dict[K, V], key: K, default: Callable[[], V]) -> V:
     """
-    Return an element at the specified index if it exists
-    and a default value otherwise.
+    If the dictionary doesn't contain a required key, generate and insert new value.
+    After that, return a value associated with this key.
+    New values are evaluated lazily.
+
+    >>> features = {"price": 100, "quality": 50}
+    >>> get_or_put(features, "quality", default=lambda: -1)
+    50
+    >>> get_or_put(features, "availability", default=lambda: -1)
+    -1
+    >>> features["availability"]
+    -1
     """
-    return values[index] if index < len(values) else default
+    if key not in values:
+        values[key] = default()
+    return values[key]
+
+
+def extend(values: list[T], until_length: int, with_value: Callable[[], T]):
+    """
+    Extend the list using a value generator
+    until a required length is reached.
+    New values are evaluated lazily.
+
+    >>> numbers = [1, 2, 3]
+    >>> extend(numbers, until_length=5, with_value=lambda: -1)
+    >>> numbers
+    [1, 2, 3, -1, -1]
+    """
+    extra_length = until_length - len(values)
+    if extra_length <= 0:
+        return
+    for _ in range(extra_length):
+        values.append(with_value())

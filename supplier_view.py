@@ -32,16 +32,16 @@ class SupplierView:
                         st.text(Pair.EXPECTED_TEXT)
                     with inner_columns[1]:
                         st.text(Pair.ACTUAL_TEXT)
-        for month_index, month in enumerate(period.months):
+        cu.extend(supplier.supplies, until_length=period.length, with_value=Supply)
+        for supply, month in zip(supplier.supplies, period.months):
             with st.container():
-                supply = cu.get(supplier.supplies, month_index, default=Supply())
                 columns = st.columns(column_width_weights)
                 with columns[0]:
                     st.text(month.localized_name)
                 for product_index, product in enumerate(products):
                     with columns[product_index + 1]:
-                        quantity = supply.quantities.get(product.name, Pair())
-                        PairView.create(quantity, f"quantity_{month_index}_{product_index}")
+                        quantity = cu.get_or_put(supply.quantities, key=product.name, default=Pair)
+                        PairView.create(quantity)
         return SupplierView._validate(supplier)
 
     @staticmethod
