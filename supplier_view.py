@@ -1,4 +1,5 @@
 import streamlit as st
+import math
 
 import collection_utils as cu
 
@@ -65,12 +66,18 @@ class SupplierView:
                 with columns[product_index]:
                     price = cu.get_or_put(supplier.prices, key=product.name, default=Pair)
                     PairView.create(price)
-        return SupplierView._validate(supplier)
+        return SupplierView._validate(supplier, products)
 
     @staticmethod
-    def _validate(supplier: Supplier) -> Problems:
+    def _validate(supplier: Supplier, products: list[Product]) -> Problems:
         problems = Problems()
         if supplier.name == "":
             problems.add_error("Не задано название поставщика")
-        # TODO: additional validation for each product
+        # Intentionally skipping the check of supplies in order to avoid being overflown with warnings
+        for product in products:
+            price = cu.get_or_put(supplier.prices, key=product.name, default=Pair)
+            if math.isclose(price.expected, 0.0):
+                problems.add_warning(f"{product.name}: не задана цена по договору")
+            if math.isclose(price.actual, 0.0):
+                problems.add_warning(f"{product.name}: не задана цена по факту")
         return problems
