@@ -16,6 +16,7 @@ class SupplierView:
     def create(supplier: Supplier, products: list[Product], period: Period, view_key: str) -> Problems:
         supplier.name = st.text_input(Supplier.NAME_TEXT, value=supplier.name, key=f"supplier_name_{view_key}").strip()
         column_width_weights = [len(products)] + [20] * len(products)
+        st.markdown("#### Поставки")
         with st.container():
             columns = st.columns(column_width_weights)
             for product_index, product in enumerate(products):
@@ -42,6 +43,28 @@ class SupplierView:
                     with columns[product_index + 1]:
                         quantity = cu.get_or_put(supply.quantities, key=product.name, default=Pair)
                         PairView.create(quantity)
+        column_width_weights = column_width_weights[1:]
+        st.markdown("#### Цены товаров")
+        with st.container():
+            columns = st.columns(column_width_weights)
+            for product_index, product in enumerate(products):
+                with columns[product_index]:
+                    st.text(product.name)
+        with st.container():
+            columns = st.columns(column_width_weights)
+            for product_index in range(len(products)):
+                with columns[product_index]:
+                    inner_columns = st.columns(2)
+                    with inner_columns[0]:
+                        st.text(Pair.EXPECTED_TEXT)
+                    with inner_columns[1]:
+                        st.text(Pair.ACTUAL_TEXT)
+        with st.container():
+            columns = st.columns(column_width_weights)
+            for product_index, product in enumerate(products):
+                with columns[product_index]:
+                    price = cu.get_or_put(supplier.prices, key=product.name, default=Pair)
+                    PairView.create(price)
         return SupplierView._validate(supplier)
 
     @staticmethod
