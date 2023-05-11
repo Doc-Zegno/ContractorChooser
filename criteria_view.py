@@ -15,18 +15,19 @@ class CriteriaView:
             criteria: list[Criterion],
             view_key: str,
             disable_name: bool = False,
+            disable_upload: bool = False,
             disable_add_remove: bool = False
     ) -> Problems:
         st.header("Критерии")
-        # TODO: disable uploading for the 2nd app at all (will overwrite names)
-        criteria_file_changed_key = Key(f"{view_key}.criteria.file.changed", default_value=False)
-        csv_file = st.file_uploader("Загрузить критерии", key=f"criteria_upload_{view_key}", type="csv",
-                                    on_change=lambda: State.set(criteria_file_changed_key))
-        if State.reset(criteria_file_changed_key) and csv_file is not None:
-            dataframe = pd.read_csv(csv_file)
-            uploaded_criteria = Criterion.from_dataframe(dataframe)
-            criteria.clear()
-            criteria.extend(uploaded_criteria)
+        if not disable_upload:
+            criteria_file_changed_key = Key(f"{view_key}.criteria.file.changed", default_value=False)
+            csv_file = st.file_uploader("Загрузить критерии", key=f"criteria_upload_{view_key}", type="csv",
+                                        on_change=lambda: State.set(criteria_file_changed_key))
+            if State.reset(criteria_file_changed_key) and csv_file is not None:
+                dataframe = pd.read_csv(csv_file)
+                uploaded_criteria = Criterion.from_dataframe(dataframe)
+                criteria.clear()
+                criteria.extend(uploaded_criteria)
         column_width_weights = [1, 30, 20]
         if not disable_add_remove:
             column_width_weights.append(1)

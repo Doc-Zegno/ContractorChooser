@@ -46,7 +46,7 @@ class SecondApp:
     def create():
         criteria = State.get(SecondApp._CRITERIA_KEY)
         criteria_problems = CriteriaView.create(criteria, view_key=SecondApp.ID,
-                                                disable_name=True, disable_add_remove=True)
+                                                disable_name=True, disable_upload=True, disable_add_remove=True)
         ProblemsView.create(criteria_problems)
         products = State.get(SecondApp._PRODUCTS_KEY)
         products_problems = ProductsView.create(products)
