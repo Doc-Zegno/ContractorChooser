@@ -9,8 +9,6 @@ TValue = TypeVar("TValue")
 
 class State:
     _KEY_COUNTER_TEXT = "key_counter"
-    _IS_CRITERIA_FILE_CHANGED_TEXT = "is_criteria_file_changed"
-    _IS_CONTRACTORS_FILE_CHANGED_TEXT = "is_contractors_file_changed"
 
     @staticmethod
     def get(key: Key[TValue]) -> TValue:
@@ -36,34 +34,19 @@ class State:
         return f"generated_key_{index}"
 
     @staticmethod
-    def set_criteria_file_changed():
-        State._set(State._IS_CRITERIA_FILE_CHANGED_TEXT)
+    def set(key: Key[bool]):
+        State._set(key.name)
 
     @staticmethod
-    def reset_criteria_file_changed() -> bool:
+    def reset(key: Key[bool]) -> bool:
         """
-        Atomically check whether the uploaded criteria file has recently changed
-        and reset this status flag back to False, so the subsequent
-        checks will fail until the next change of file.
+        Atomically check whether the boolean value has recently been set
+        and reset it back to False, so the subsequent checks
+        will fail until the next invocation of set.
 
-        :return: True if uploaded criteria file has changed since the previous reset.
+        :return: True if the boolean value has been set since the previous reset.
         """
-        return State._reset(State._IS_CRITERIA_FILE_CHANGED_TEXT)
-
-    @staticmethod
-    def set_contractors_file_changed():
-        State._set(State._IS_CONTRACTORS_FILE_CHANGED_TEXT)
-
-    @staticmethod
-    def reset_contractors_file_changed():
-        """
-        Atomically check whether the uploaded contractors file has recently changed
-        and reset this status flag back to False, so the subsequent
-        checks will fail until the next change of file.
-
-        :return: True if uploaded contractors file has changed since the previous reset.
-        """
-        return State._reset(State._IS_CONTRACTORS_FILE_CHANGED_TEXT)
+        return State._reset(key.name)
 
     @staticmethod
     def _set(flag_name: str):

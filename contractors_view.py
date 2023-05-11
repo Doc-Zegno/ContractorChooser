@@ -6,6 +6,7 @@ from contractor import Contractor
 from criterion import Criterion
 from problems import Problems
 from state import State
+from key import Key
 
 
 class ContractorsView:
@@ -16,8 +17,10 @@ class ContractorsView:
         if has_errors or len(criteria) == 0:
             problems.add_error("Невозможно отобразить данные о подрядчиках, пока не заданы корректные критерии")
             return problems
-        csv_file = st.file_uploader("Загрузить подрядчиков", type="csv", on_change=State.set_contractors_file_changed)
-        if State.reset_contractors_file_changed() and csv_file is not None:
+        contractors_file_changed_key = Key("contractors.file.changed", default_value=False)
+        csv_file = st.file_uploader("Загрузить подрядчиков", type="csv",
+                                    on_change=lambda: State.set(contractors_file_changed_key))
+        if State.reset(contractors_file_changed_key) and csv_file is not None:
             dataframe = pd.read_csv(csv_file)
             uploaded_contractors = Contractor.from_dataframe(criteria, dataframe)
             contractors.clear()

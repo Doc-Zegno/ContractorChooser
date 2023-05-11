@@ -6,6 +6,7 @@ from dataframe_utils import convert_to_csv
 from criterion import Criterion
 from problems import Problems
 from state import State
+from key import Key
 
 
 class CriteriaView:
@@ -17,9 +18,11 @@ class CriteriaView:
             disable_add_remove: bool = False
     ) -> Problems:
         st.header("Критерии")
+        # TODO: disable uploading for the 2nd app at all (will overwrite names)
+        criteria_file_changed_key = Key(f"{view_key}.criteria.file.changed", default_value=False)
         csv_file = st.file_uploader("Загрузить критерии", key=f"criteria_upload_{view_key}", type="csv",
-                                    on_change=State.set_criteria_file_changed)
-        if State.reset_criteria_file_changed() and csv_file is not None:
+                                    on_change=lambda: State.set(criteria_file_changed_key))
+        if State.reset(criteria_file_changed_key) and csv_file is not None:
             dataframe = pd.read_csv(csv_file)
             uploaded_criteria = Criterion.from_dataframe(dataframe)
             criteria.clear()
