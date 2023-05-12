@@ -57,9 +57,14 @@ class SupplierView:
                         quantity = cu.get_or_put(supply.quantities, key=product.name, default=Pair)
                         PairView.create(quantity)
         # Supplies are always available for downloading since there's no validation for them at all
-        serialized_supplies = du.convert_to_csv(Supply.to_dataframe(supplier.supplies, products, period))
-        st.download_button("Скачать поставки", serialized_supplies, key=f"supplies_download_{view_key}",
-                           file_name=Supply.FILE_NAME, mime="text/csv")
+        supplies_dataframe = Supply.to_dataframe(supplier.supplies, products, period)
+        supplies_as_excel = du.convert_to_excel(supplies_dataframe)
+        supplies_as_csv = du.convert_to_csv(supplies_dataframe)
+        st.download_button("Скачать поставки (Excel)", supplies_as_excel, key=f"supplies_download_excel_{view_key}",
+                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                           file_name=Supply.EXCEL_FILE_NAME)
+        st.download_button("Скачать поставки (CSV)", supplies_as_csv, key=f"supplies_download_csv_{view_key}",
+                           file_name=Supply.CSV_FILE_NAME, mime="text/csv")
         column_width_weights = column_width_weights[1:]
         st.markdown("#### Цены товаров")
         with st.container():

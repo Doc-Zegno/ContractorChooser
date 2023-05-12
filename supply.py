@@ -10,7 +10,8 @@ from pair import Pair
 
 class Supply:
     MONTH_TEXT = "Месяц"
-    FILE_NAME = "supplies.csv"
+    CSV_FILE_NAME = "supplies.csv"
+    EXCEL_FILE_NAME = "supplies.xlsx"
 
     def __init__(self, quantities: Optional[dict[str, Pair]] = None):
         self.quantities = quantities if quantities is not None else {}
