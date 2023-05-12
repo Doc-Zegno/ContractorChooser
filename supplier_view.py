@@ -1,7 +1,9 @@
 import streamlit as st
+import pandas as pd
 import math
 
 import collection_utils as cu
+import dataframe_utils as du
 
 from pair_view import PairView
 from problems import Problems
@@ -9,7 +11,9 @@ from supplier import Supplier
 from product import Product
 from period import Period
 from supply import Supply
+from state import State
 from pair import Pair
+from key import Key
 
 
 class SupplierView:
@@ -18,6 +22,14 @@ class SupplierView:
         supplier.name = st.text_input(Supplier.NAME_TEXT, value=supplier.name, key=f"supplier_name_{view_key}").strip()
         column_width_weights = [len(products)] + [20] * len(products)
         st.markdown("#### Поставки")
+        supplies_file_changed_key = Key(f"{view_key}.supplies.file.changed", default_value=False)
+        csv_file = st.file_uploader("Загрузить поставки", key=f"supplies_upload_{view_key}", type="csv",
+                                    on_change=lambda: State.set(supplies_file_changed_key))
+        if State.reset(supplies_file_changed_key) and csv_file is not None:
+            dataframe = pd.read_csv(csv_file)
+            uploaded_supplies = Supply.from_dataframe(dataframe, products)
+            supplier.supplies.clear()
+            supplier.supplies.extend(uploaded_supplies)
         with st.container():
             columns = st.columns(column_width_weights)
             for product_index, product in enumerate(products):
@@ -44,6 +56,10 @@ class SupplierView:
                     with columns[product_index + 1]:
                         quantity = cu.get_or_put(supply.quantities, key=product.name, default=Pair)
                         PairView.create(quantity)
+        # Supplies are always available for downloading since there's no validation for them at all
+        serialized_supplies = du.convert_to_csv(Supply.to_dataframe(supplier.supplies, products, period))
+        st.download_button("Скачать поставки", serialized_supplies, key=f"supplies_download_{view_key}",
+                           file_name=Supply.FILE_NAME, mime="text/csv")
         column_width_weights = column_width_weights[1:]
         st.markdown("#### Цены товаров")
         with st.container():

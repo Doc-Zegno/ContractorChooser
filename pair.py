@@ -1,4 +1,7 @@
 class Pair:
+    EXPECTED_MNEMONIC = "Пд"
+    ACTUAL_MNEMONIC = "Пф"
+
     EXPECTED_TEXT = "По договору"
     ACTUAL_TEXT = "По факту"
 
