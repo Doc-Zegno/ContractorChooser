@@ -1,5 +1,4 @@
 import streamlit as st
-import pandas as pd
 import math
 
 import collection_utils as cu
@@ -23,10 +22,10 @@ class SupplierView:
         column_width_weights = [len(products)] + [20] * len(products)
         st.markdown("#### Поставки")
         supplies_file_changed_key = Key(f"{view_key}.supplies.file.changed", default_value=False)
-        csv_file = st.file_uploader("Загрузить поставки", key=f"supplies_upload_{view_key}", type="csv",
-                                    on_change=lambda: State.set(supplies_file_changed_key))
-        if State.reset(supplies_file_changed_key) and csv_file is not None:
-            dataframe = pd.read_csv(csv_file)
+        supplies_file = st.file_uploader("Загрузить поставки", key=f"supplies_upload_{view_key}", type=["csv", "xlsx"],
+                                         on_change=lambda: State.set(supplies_file_changed_key))
+        if State.reset(supplies_file_changed_key) and supplies_file is not None:
+            dataframe = du.parse_dataframe(supplies_file)
             uploaded_supplies = Supply.from_dataframe(dataframe, products)
             supplier.supplies.clear()
             supplier.supplies.extend(uploaded_supplies)

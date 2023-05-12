@@ -14,3 +14,12 @@ def convert_to_excel(dataframe: pd.DataFrame) -> bytes:
     dataframe.to_excel(in_memory_writer, index=False)
     in_memory_writer.seek(0, 0)
     return in_memory_writer.read()
+
+
+def parse_dataframe(file: BytesIO) -> pd.DataFrame:
+    if file.name.endswith(".xlsx"):
+        return pd.read_excel(file)
+    elif file.name.endswith(".csv"):
+        return pd.read_csv(file)
+    else:
+        raise RuntimeError(f"Unsupported extension of file '{file.name}'")
