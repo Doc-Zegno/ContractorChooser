@@ -29,10 +29,10 @@ class SecondApp:
     ]
 
     _INITIAL_PRODUCTS = [
-        Product("A"),
-        Product("B"),
-        Product("C"),
-        Product("D"),
+        Product("А"),
+        Product("Б"),
+        Product("В"),
+        Product("Г"),
     ]
 
     _INITIAL_PERIOD = Period(Month.JANUARY, Month.DECEMBER)
