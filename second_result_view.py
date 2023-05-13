@@ -47,9 +47,9 @@ class SecondResultView:
             f"#### Результаты для поставщика '{supplier.name}'"
         ]
         for criterion_name, score in scores.items():
-            lines.append(f" * балл по критерию '{criterion_name}': {score}")
+            lines.append(f" * балл по критерию '{criterion_name}': {score:.3f}")
         lines.append("")  # To stop filling an item list
-        lines.append(f"Общий балл: {total_score}")
+        lines.append(f"Общий балл: {total_score:.3f}")
         return "\n".join(lines)
 
     @staticmethod
