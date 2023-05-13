@@ -86,14 +86,14 @@ class SupplierView:
                 with columns[product_index]:
                     price = cu.get_or_put(supplier.prices, key=product.name, default=Pair)
                     PairView.create(price)
-        return SupplierView._validate(supplier, products)
+        return SupplierView._validate(supplier, products, period)
 
     @staticmethod
-    def _validate(supplier: Supplier, products: list[Product]) -> Problems:
+    def _validate(supplier: Supplier, products: list[Product], period: Period) -> Problems:
         problems = Problems()
         if supplier.name == "":
             problems.add_error("Не задано название поставщика")
-        # Intentionally skipping the check of supplies in order to avoid being overflown with warnings
+        SupplierView._validate_supplies(supplier, products, period, problems)
         for product in products:
             price = cu.get_or_put(supplier.prices, key=product.name, default=Pair)
             if math.isclose(price.expected, 0.0):
@@ -101,3 +101,14 @@ class SupplierView:
             if math.isclose(price.actual, 0.0):
                 problems.add_warning(f"{product.name}: не задана цена по факту")
         return problems
+
+    @staticmethod
+    def _validate_supplies(supplier: Supplier, products: list[Product], period: Period, problems: Problems):
+        cu.extend(supplier.supplies, until_length=period.length, with_value=Supply)
+        for month_index in range(period.length):
+            supply = supplier.supplies[month_index]
+            for product in products:
+                quantity = cu.get_or_put(supply.quantities, key=product.name, default=Pair)
+                if math.isclose(quantity.expected, 0.0) or math.isclose(quantity.actual, 0.0):
+                    problems.add_warning(f"Заданы не все поставки")
+                    return
