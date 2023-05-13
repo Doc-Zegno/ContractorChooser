@@ -1,3 +1,4 @@
+from second_result_view import SecondResultView
 from suppliers_view import SuppliersView
 from criteria_view import CriteriaView
 from products_view import ProductsView
@@ -58,3 +59,6 @@ class SecondApp:
         suppliers_problems = SuppliersView.create(suppliers, products, period,
                                                   has_errors=products_problems.has_errors or period_problems.has_errors)
         ProblemsView.create(suppliers_problems)
+        has_problems = criteria_problems.has_issues or products_problems.has_issues \
+            or period_problems.has_issues or suppliers_problems.has_issues
+        SecondResultView.create(suppliers, products, criteria, period, has_problems)
