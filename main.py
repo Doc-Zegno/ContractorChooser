@@ -4,7 +4,7 @@ from second_app import SecondApp
 from first_app import FirstApp
 
 
-APP_VERSION = "1.1.0"
+APP_VERSION = "1.2.0"
 
 
 def enable_vertical_alignment():
