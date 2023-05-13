@@ -40,7 +40,9 @@ class Supply:
     def _from_row(row: pd.Series, products: list[Product]) -> "Supply":
         quantities = {}
         for product in products:
-            expected = float(row[f"{product.name} {Pair.EXPECTED_MNEMONIC}"])
-            actual = float(row[f"{product.name} {Pair.ACTUAL_MNEMONIC}"])
+            expected_key = f"{product.name} {Pair.EXPECTED_MNEMONIC}"
+            actual_key = f"{product.name} {Pair.ACTUAL_MNEMONIC}"
+            expected = float(row.get(expected_key, 0.0))
+            actual = float(row.get(actual_key, 0.0))
             quantities[product.name] = Pair(expected, actual)
         return Supply(quantities)
